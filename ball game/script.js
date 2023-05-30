@@ -1,5 +1,6 @@
 var character = document.getElementById("character");
 var hurdle = document.getElementById("hurdle");
+var ball = document.getElementById("ball");
 var game = document.getElementById("game");
 var interval;
 var both = 0;
@@ -7,6 +8,7 @@ var counter = 0;
 var currentBlocks = [];
 var score = 0;
 var isJumping = false;
+var isBallJumping = false;
 
 function moveLeft() {
   var left = parseInt(window.getComputedStyle(character).getPropertyValue("left"));
@@ -19,6 +21,18 @@ function moveRight() {
   var left = parseInt(window.getComputedStyle(character).getPropertyValue("left"));
   if (left < 380) {
     character.style.left = left + 2 + "px";
+  }
+}
+
+function handleKeyDown(event) {
+  if (event.key === " " || event.key === "w") {
+    event.preventDefault();
+    if (!isJumping) {
+      jump();
+    }
+    if (!isBallJumping) {
+      jumpBall();
+    }
   }
 }
 
@@ -42,19 +56,37 @@ function jump() {
   }
 }
 
+function jumpBall() {
+  if (!isBallJumping) {
+    isBallJumping = true;
+    var jumpCount = 0;
+    var initialTop = parseInt(window.getComputedStyle(ball).getPropertyValue("top"));
+    var jumpInterval = setInterval(function () {
+      var ballTop = parseInt(window.getComputedStyle(ball).getPropertyValue("top"));
+      if (jumpCount < 15) {
+        ball.style.top = initialTop - (jumpCount * 5) + "px";
+      } else if (jumpCount >= 15 && jumpCount < 30) {
+        ball.style.top = initialTop - (jumpCount - 15) * 5 + "px";
+      } else if (jumpCount >= 30) {
+        clearInterval(jumpInterval);
+        isBallJumping = false;
+      }
+      jumpCount++;
+    }, 10);
+  }
+}
+
 document.addEventListener("keydown", function (event) {
   if (both === 0) {
     both++;
-    if (event.key === "ArrowLeft") {
+    if (event.key === "ArrowLeft" || event.key === "a") {
       interval = setInterval(moveLeft, 1);
     }
-    if (event.key === "ArrowRight") {
+    if (event.key === "ArrowRight" || event.key === "d") {
       interval = setInterval(moveRight, 1);
     }
-    if (event.key === " ") {
-      jump();
-    }
   }
+  handleKeyDown(event); // Check for jumping on both ' ' and 'w' keys
 });
 
 document.addEventListener("keyup", function () {
@@ -179,25 +211,3 @@ function changeBackgroundColor() {
 }
 
 setInterval(changeBackgroundColor, 2000);
-// Update the handleTouchMove function
-function handleTouchMove(event) {
-    event.preventDefault();
-    touchEndX = event.touches[0].clientX;
-  
-    // Call moveLeft or moveRight based on touch movement
-    if (touchEndX < touchStartX) {
-      // Move character left
-      moveLeft();
-    } else if (touchEndX > touchStartX) {
-      // Move character right
-      moveRight();
-    }
-  }
-  
-  // Update the event listeners for touch events
-  document.addEventListener('touchstart', handleTouchStart, false);
-  document.addEventListener('touchmove', function (event) {
-    handleTouchMove(event);
-  }, false);
-  document.addEventListener('touchend', handleTouchEnd, false);
-  
